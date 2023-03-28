@@ -1,0 +1,74 @@
+import javax.swing.*;
+import javax.swing.border.Border;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+public class ChatServer {
+    public static void main(String[] args) throws IOException {
+        JFrame frame = new JFrame("Chat Server");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(600, 400);
+
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBackground(new Color(53, 56, 64));
+
+        JTextArea chatArea = new JTextArea();
+        chatArea.setEditable(false);
+        chatArea.setFont(new Font("Arial", Font.PLAIN, 14));
+        chatArea.setForeground(Color.WHITE);
+        chatArea.setBackground(new Color(53, 56, 64));
+        JScrollPane scrollPane = new JScrollPane(chatArea);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        bottomPanel.setBackground(new Color(53, 56, 64));
+
+        ImageIcon avatarIcon = new ImageIcon("path/to/your/avatar.png");
+        JLabel avatarLabel = new JLabel(avatarIcon);
+        avatarLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+        JTextField messageField = new JTextField(30);
+        messageField.setFont(new Font("Arial", Font.PLAIN, 14));
+
+        JButton sendButton = new JButton("Send");
+        sendButton.setForeground(Color.WHITE);
+        sendButton.setBackground(new Color(66, 134, 244));
+
+        bottomPanel.add(avatarLabel, BorderLayout.WEST);
+        bottomPanel.add(messageField, BorderLayout.CENTER);
+        bottomPanel.add(sendButton, BorderLayout.EAST);
+
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
+
+        frame.setContentPane(mainPanel);
+        frame.setVisible(true);
+
+        int port = 12345;
+        ServerSocket serverSocket = new ServerSocket(port);
+        Socket clientSocket = serverSocket.accept();
+        PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+        BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+        sendButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String message = messageField.getText();
+                out.println(message);
+                chatArea.append("Server: " + message + "\n");
+                messageField.setText("");
+            }
+        });
+
+        while (true) {
+            String receivedMessage = in.readLine();
+            if (receivedMessage != null) {
+                chatArea.append("Client: " + receivedMessage + "\n");
+            }
+        }
+    }
+}
